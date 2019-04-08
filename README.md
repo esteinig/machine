@@ -10,7 +10,7 @@ Welcome to the Machine.
 
 ## Guides
 
-1. [Setup Guide](docs/setup.MD)
+1. [Setup Guide](docs/setup.md)
 
 ## Weekly Tasks
 
