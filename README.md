@@ -1,4 +1,4 @@
-# Machine Learning Club <a href='https://github.com/esteinig'><img src='docs/img/machine.png' align="right" height="220" /></a>
+# Machine Learning Club <a href='https://github.com/esteinig'><img src='docs/img/machine.png' align="right" height="210" /></a>
 
 ![](https://img.shields.io/badge/version-0.1-blue.svg)
 ![](https://img.shields.io/badge/docs-none-green.svg)
