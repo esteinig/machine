@@ -10,7 +10,7 @@ Welcome to the Machine.
 
 ## Setup
 
-This section is meant to help you with setting up an optimized environment for this course and assumes you are on Windows. If you have better alternatives for the programs below, feel free to post them here.
+This section is meant to help you with setting up an optimized environment for this course and assumes you are on Windows. If you have better alternatives for the programs below, feel free to use them or post them here - this case, please note that we will not discuss problems with setting up your own preferred environment during the meetings (troubleshooting would take forever) and simply assume you know what you are doing.
 
 Download and setup the following infrastructure with default options:
 
