@@ -10,9 +10,9 @@ Welcome to the Machine.
 
 ## Guides
 
-1. [Setup Guide](docs/setup.md)
+* [Setup Guide](docs/setup.md)
 
 ## Weekly Tasks
 
-Pass.
+* **Week 1** - complete the `DataGenerator` and `DataSet` classes
 
