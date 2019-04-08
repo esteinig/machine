@@ -10,8 +10,6 @@ Download and setup the following infrastructure with default options:
 
 ## Virtual Environments
 
-`remember to enter your environment before you do anything on the terminal`
-
 Miniconda is a robust package and environment manager. When you are working on multiple projects, you should keep your dependencies separate for each project, so you do not enter dependency hell. Practically, this means when you start your `Git Bash` console, the first thing for this course is to create a new environment (with `Python`) and then activate it (to enter the environment). You can always leave the enironment by pressing `Ctrl+A+D` or as follows:
 
 ```bash
@@ -35,7 +33,9 @@ source activate machine
 conda install scipy pandas numpy matplotlib
 ```
 
-Great - all dependencies are now set up. Don't forget to exit your environment if you keep working on a different project!
+Great - all dependencies are now set up. Don't forget to exit your environment if you keep working on a different project. Steps above only need to be completed once, you can enter your environment at any stage with `source activate machine`.
+
+**`Remember to enter your environment before you do anything on the terminal.`**
 
 **Linking environments to Pycharm**
 
