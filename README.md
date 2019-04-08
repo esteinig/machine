@@ -12,7 +12,7 @@ Welcome to the Machine.
 
 * [Setup Guide](docs/setup.md)
 
-## Weekly Tasks
+## Tasks
 
 * **Week 1** - complete the `DataGenerator` and `DataSet` classes
 
