@@ -8,12 +8,10 @@
 Welcome to the Machine.
 
 ## Setup
----
 
 Pass.
 
 ## Weekly Tasks
----
 
-Pass
+Pass.
 
