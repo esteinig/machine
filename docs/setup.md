@@ -5,20 +5,40 @@ This section is meant to help you with setting up an optimized environment for t
 Download and setup the following infrastructure with default options:
 
 1. [Pycharm Community 2019.1](https://www.jetbrains.com/pycharm/download/)
-2. [Anaconda (latest)](https://www.anaconda.com/distribution/#download-section)
+2. [Miniconda (latest)](https://docs.conda.io/en/latest/miniconda.html)
 3. [Git Bash](https://gitforwindows.org/)
 
-*Pycharm*
-***
+## Virtual Environments
 
-Pycharm is a super powerful Python IDE. You are all eligible to get the educational version for free, and I would recommend doing so - it has funky things like deployment, which makes project deployment to remote servers a lot easier (e.g. to run your code on GPU). It also has inbuilt linting support along PEP guidelines, so if you make an effort to get rid of squiggly lines in the IDE, your code will look like real Python! Wow, so cool.
+`remember to enter your environment before you do anything on the terminal`
 
-*Anaconda*
-***
+Miniconda is a robust package and environment manager. When you are working on multiple projects, you should keep your dependencies separate for each project, so you do not enter dependency hell. Practically, this means when you start your `Git Bash` console, the first thing for this course is to create a new environment (with `Python`) and then activate it (to enter the environment). You can always leave the enironment by pressing `Ctrl+A+D` or as follows:
 
-Anaconda started out as an alternative to the `PyPI` package manager for Python. However, it has become a versatile and robust package manager, providing access to other command line programs not necessarily based on Python. If you are still installing most programs from source, stop everything you're doing and use Anaconda. Seriously.
+```bash
+conda create --name machine python=3.6  # create env
+source activate machine                 # enter env
+source deactivate machine               # exit env
+```
 
-*Git Bash*
-***
+Anaconda runs different channels where developers will upload their packages. One of the most useful channels is [`BioConda`](https://bioconda.github.io/) ([Nature Methods](https://doi.org/10.1038/s41592-018-0046-7)) for any program associated with biological data science and particularly genomic data science. Another useful channel is the `Forge` which is a community-driven developer's channel and usually has most up-to-date packages. We will add these to the configuration of `conda` on your system:
 
-Git Bash is a pretty convenient way to have a somewhat functional UNIX terminal on your Windows. There are alternatives with more functionality, but this is not necessary most of the time. You should not expect the terminal to operate exactly the same as on UNIX systems, simply because a ton of basic command line programs shipping with UNIX systems are not available for Windows.
+```bash
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+```
+
+Anaconda also wraps around `pip` and attempts to manage both `conda` distributions and standard distributions by `PyPI`. We need a couple of Python packages for the first week: `scipy`, `pandas`, `numpy` and `matplotlib`, which we will install with Cnda
+
+```bash
+source activate machine
+conda install scipy pandas numpy matplotlib
+```
+
+Great - all dependencies are now set up. Don't forget to exit your environment if you keep working on a different project!
+
+**Linking environments to Pycharm**
+
+If you are using Pycharm, you can set your interpreter (`python.exe`) to the one in the virtual environment - environments are basically just a separate directory structure that holds all the drivers, packages and dependency trees for the programs, and when you enter an environment, it is prepended to `$PATH` so that any program called from the command line will be looked for in the environmnet directory first.
+
+In Pycharm, go to `
