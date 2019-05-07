@@ -1,5 +1,5 @@
 import numpy as np
-from steinet.base import logistic, binary_log_loss, ClassifierMixin
+from machine.base import logistic, binary_log_loss, ClassifierMixin
 
 
 class LogisticClassifierBinary(ClassifierMixin):
