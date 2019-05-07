@@ -1,7 +1,13 @@
+<script src="//yihui.name/js/math-code.js"></script>
+<!-- Just one possible MathJax CDN below. You may use others. -->
+<script async
+  src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
 # Neurons - the building blocks
 
-The fundamental building blocks of neural networks are neurons: logistic units. The goal of logistic regression is to predict the result of a random experiment with a binary outcome (e.g. TRUE/FALSE, PASS/FAIL, 0/1), i.e. a Bernoulli trial that has probability $$p$$ of success. Because we are trying to predict a probability $$p$$, which lies in the range $[0,1]$, linear regression is not an appropriate model: for $x\in(-\infty,\infty)$ linear regression models for $p$ would predict values in the interval $(-\infty, \infty)$. Therefore, rather than modelling the probability $p$ directly with a linear regression model, we instead model the log odds. In logistic regression we are modelling the log odds with a straight line (or plane/hyperplane). If we let $\hat y = P(y=1|x)$, i.e. the probability that a random variable $y$ is equal to $1$ given the data $x$:
-$$\log \left(\frac{\hat y}{1 - \hat y}\right) = Xw + b \equiv z$$.
+The fundamental building blocks of neural networks are neurons: logistic units. The goal of logistic regression is to predict the result of a random experiment with a binary outcome (e.g. TRUE/FALSE, PASS/FAIL, 0/1), i.e. a Bernoulli trial that has probability `$p$` of success. Because we are trying to predict a probability `$p$`, which lies in the range $[0,1]$, linear regression is not an appropriate model: for $x\in(-\infty,\infty)$ linear regression models for $p$ would predict values in the interval $(-\infty, \infty)$. Therefore, rather than modelling the probability $p$ directly with a linear regression model, we instead model the log odds. In logistic regression we are modelling the log odds with a straight line (or plane/hyperplane). If we let $\hat y = P(y=1|x)$, i.e. the probability that a random variable $y$ is equal to $1$ given the data $x$:
+`$\log \left(\frac{\hat y}{1 - \hat y}\right) = Xw + b \equiv z$`.
 Rearranging this expression for the probability of success $\hat y$ we get
 y ^=s(z)=1/(1+exp??(-z)? )
 Here we have introduced s(z): the sigmoid or logistic function, s:(-8,8)?(0,1)
