@@ -4,7 +4,7 @@ from machine.base import softmax, log_loss, ClassifierMixin, one_hot
 
 class LogisticClassifierMultinomial(ClassifierMixin):
     """
-    Logistic regression classifier for binary targets
+    Logistic regression classifier for multinomial targets
 
     Attributes
     ----------
