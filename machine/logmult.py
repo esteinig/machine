@@ -1,5 +1,5 @@
 import numpy as np
-from steinet.base import softmax, log_loss, ClassifierMixin, one_hot
+from machine.base import softmax, log_loss, ClassifierMixin, one_hot
 
 
 class LogisticClassifierMultinomial(ClassifierMixin):
