@@ -240,10 +240,14 @@ For convenience, I have summarized the feed-forward and backpropagation equation
 
 
 ## Weekly tasks
-This week we will update our `LogisticClassifier` object by providing it with the ability to train by adding the method `fit()`.
+This week we will update our `LogisticClassifierBinary` object by providing it with the ability to train by adding the method `fit()`.
+
+#### `DataContainer`
 - First, return to the `DataContainer` object and add a method `train_test_split(frac=0.8)` that splits the dataset `(X,y)` into test and training datasets assigning some fraction `frac` to the training component
+#### base.py
 - Add a function `binary_log_loss(y_true, y_prob)` to the base.py script to compute the loss <img src="https://tex.s2cms.ru/svg/J" alt="J" /> of a particular training dataset (whether that be an individual sample, a batch, or the entire set)
-- In `LogisticClassifier` write an internal (private) method `_compute_loss_grad(X, delta)` that computes the gradient of loss with respect to the weights and biases
+#### `LogisticClassifierBinary`
+- In `LogisticClassifierBinary` write an internal (private) method `_compute_loss_grad(X, delta)` that computes the gradient of loss with respect to the weights and biases
 - Write another internal method `_update_params(grad_w, grad_b)` that updates the weights and biases based on the loss gradients
 - Write a `fit(X, y)` method that accepts a sample dataset `X` and target set `y` and trains the model to minimize the loss function
 	
