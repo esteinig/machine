@@ -12,10 +12,11 @@ Welcome to the Machine.
 
 * [Setup Guide](docs/setup.md)
 
-## Lectures
+## Course notes
 
-* [Neurons - the building blocks](docs/Neurons - the building blocks
-
+* [1. Introduction](docs/1 Introduction.md)
+* [2. Neurons - the building blocks](docs/2\ Neurons\ -\ the\ building\ blocks.md
+* [3. The 'learning' in machine learning](docs/3 The 'learning' in machine learning)
 ## Tasks
 
 * **Week 1** - complete the `DataGenerator` and `DataSet` classes

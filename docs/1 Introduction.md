@@ -15,7 +15,7 @@
 
 For an idea of where we are heading in this section of the course, visit the site https://playground.tensorflow.org/ which allows you to build your own neural networks and use them to classify several classic datasets. The course will be very hands on, we will do everything from generating the classic datasets ourselves, through to coding a simple logistic classifier before finally learning about the most basic neural network type: multi-layer perceptrons. Along the way we will learn several key machine learning concepts including regularization, feature engineering, batch training, dropout, etc. 
 
-##Data Generation
+## Data Generation
 
 Although machine learning is much more general and powerful, initially we will use classification tasks to introduce ourselves to many of the key concepts. In doing so, we will see that classification tasks essentially amount to a geometry problem: finding surfaces in our ‘n-feature’-dimensional space that separate our groups into separate classes. As a corollary we will see that a common theme runs through all of the classification tasks that we are going to look at: all data is the same.
 
