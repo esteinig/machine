@@ -17,6 +17,7 @@ Welcome to the Machine.
 * [1. Introduction](docs/1 Introduction.md)
 * [2. Neurons - the building blocks](docs/2\ Neurons\ -\ the\ building\ blocks.md)
 * [3. The 'learning' in machine learning](docs/3 The 'learning' in machine learning.md)
+* [6. Multinomial backpropagation](docs/6_mult_back.md)
 ## Tasks
 
 * **Week 1** - complete the `DataGenerator` and `DataSet` classes
