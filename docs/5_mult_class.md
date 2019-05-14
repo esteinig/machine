@@ -4,11 +4,11 @@
 * The logistic classifier we have written can be extended to deal with more general classification problems where the number of target classes is arbitrary. We move then from drawing a single line (or plane) to separate our dataset into drawing several lines (or planes)
 
 <a href='https://github.com/esteinig'><img 
-src='docs/img/logbin_net.png' align="middle" height="210" 
+src='docs/img/logbin_net.png' align="left" height="210" 
 /></a>
 
 <a href='https://github.com/esteinig'><img 
-src='docs/img/logbin_net.png' align="middle" height="210" 
+src='docs/img/logbin_net.png' align="left" height="210" 
 /></a>
 
 *To generalize to multiple output classes <img src="https://tex.s2cms.ru/svg/T" alt="T" />, we need a new set of weights for each target class <img src="https://tex.s2cms.ru/svg/k%5Cin%5C%7B0%2C1%2C2%2C%5Cldots%2CT%5C%7D" alt="k\in\{0,1,2,\ldots,T\}" />:
