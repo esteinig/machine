@@ -14,11 +14,14 @@ Welcome to the Machine.
 
 ## Course notes
 
-* [1. Introduction](docs/1 Introduction.md)
-* [2. Neurons - the building blocks](docs/2\ Neurons\ -\ the\ building\ blocks.md)
-* [3. The 'learning' in machine learning](docs/3 The 'learning' in machine learning.md)
+* [1. Introduction](docs/1_intro.md)
+* [2. Neurons - the building blocks](docs/2_neurons.md)
+* [3. The 'learning' in machine learning](docs/3_learning.md)
 * [6. Multinomial backpropagation](docs/6_mult_back.md)
 ## Tasks
 
 * **Week 1** - complete the `DataGenerator` and `DataSet` classes
+* **Week 2** - build a "dumb" binary classifier
+* **Week 3** - train your dumb classifier
+
 
