@@ -17,6 +17,7 @@ Welcome to the Machine.
 * [1. Introduction](docs/1_intro.md)
 * [2. Neurons - the building blocks](docs/2_neurons.md)
 * [3. The 'learning' in machine learning](docs/3_learning.md)
+* [5. Classifying several targets](docs/5_mult_class.md)
 * [6. Multinomial backpropagation](docs/6_mult_back.md)
 ## Tasks
 
@@ -29,6 +30,9 @@ Welcome to the Machine.
 * **Week 7** - design your first deep neural network: `MLPClassifier`
 
 ## Suggested topics (to be taken up by others)
+
+* Drop-out
+* Stochastic gradient descent
 * Convolutional neural networks - Eike
 * Data exploration
 * Cross-validation
