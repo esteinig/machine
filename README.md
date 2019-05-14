@@ -21,7 +21,18 @@ Welcome to the Machine.
 ## Tasks
 
 * **Week 1** - complete the `DataGenerator` and `DataSet` classes
-* **Week 2** - build a "dumb" binary classifier
+* **Week 2** - build a "dumb" binary classifier: `LogisticClassifierBinary`
 * **Week 3** - train your dumb classifier
+* **Week 4** - add regularization
+* **Week 5** - generalize to multinomial classification: `LogisticClassifierMultinomial`
+* **Week 6** - train your multinomial classifier
+* **Week 7** - design your first deep neural network: `MLPClassifier`
 
+## Suggested topics (to be taken up by others)
+* Convolutional neural networks - Eike
+* Data exploration
+* Cross-validation
+* Overfitting
+* Regression models
+* Reinforcement learning
 
