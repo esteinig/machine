@@ -3,11 +3,13 @@
 * So far we have dealt with binary classification problems where the output predictions are either TRUE or FALSE, 1 or 0, etc
 * The logistic classifier we have written can be extended to deal with more general classification problems where the number of target classes is arbitrary. We move then from drawing a single line (or plane) to separate our dataset into drawing several lines (or planes)
 
-<a href='https://github.com/esteinig'><img 
+<a 
+href='https://github.com/esteinig'><img 
 src='docs/img/logbin_net.png' align="left" height="210" 
 /></a>
 
-<a href='https://github.com/esteinig'><img 
+<a 
+href='https://github.com/esteinig'><img 
 src='docs/img/logbin_net.png' align="left" height="210" 
 /></a>
 
