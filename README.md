@@ -37,6 +37,5 @@ Welcome to the Machine.
 * Data exploration
 * Cross-validation
 * Overfitting
-* Regression models
+* Regression models - Danny (Vinit actually)
 * Reinforcement learning
-
