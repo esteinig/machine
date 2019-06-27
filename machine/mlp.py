@@ -1,5 +1,5 @@
 import numpy as np
-from steinet.base import identity, tanh, relu, logistic, softmax, \
+from machine.base import identity, tanh, relu, logistic, softmax, \
     binary_log_loss, log_loss, squared_loss, \
     inplace_identity_derivative, tanh_derivative,\
     logistic_derivative, relu_derivative,\
