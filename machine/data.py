@@ -91,26 +91,22 @@ class DataGenerator:
         y = np.array([i for lst in [[t] * target_samples[t] for t in range(n_targets)] for i in lst]).reshape((n_samples,))
         return target_samples, y
 
-    def make_donut(self, radii=None, n_samples=100, n_targets=2, noise=0.0, random_state=None):
+    def make_donut(self, radii=None, n_samples=100, n_targets=2, noise=0.0):
         """
-        Generates concentric donut rings
+        Generates concentric doughnut rings
 
-        A simple toy dataset to visualize clustering and classification
-        algorithms.
+        A simple toy dataset to visualize clustering and classification algorithms.
 
         Parameters
         ----------
-        radii : float, optional (default=None)
+        radii : float, optional (default=None, populated as sequential integers at start of code)
             The radii of the donut rings
         n_samples : int, optional (default=100)
-            The total number of points generated.
+            The total number of points to be generated.
         n_targets : int, optional (default=2)
-            The number of target classes (spiral arms)
+            The number of target classes (doughnuts)
         noise : double (default=0.0)
-            Standard deviation of Gaussian noise added to the data.
-        random_state : int, RandomState instance or None (default)
-            Determines random number generation for dataset shuffling and noise.
-            Pass an int for reproducible output across multiple function calls.
+            Standard deviation of Gaussian noise added to the radius.
 
         Returns
         -------
@@ -119,22 +115,35 @@ class DataGenerator:
         y : array of shape [n_samples]
             The integer labels (0, 1, ..., targets) for class membership of each sample.
         """
-        if radii is None:
+
+        # default option to just use sequential integer values for the radii of the doughnuts
+        if not radii:
             radii = list(range(n_targets))
-        else:
-            n_targets = len(radii)
+
+        # otherwise check that the right number of radii have been requested
+        elif n_targets != len(radii):
+            raise ValueError("provided radii not equal to number of targets requested")
+
+        # work out how many samples in each group are needed, set the y-values, initialise empty list for x-values
         target_samples, y = self._distribute_samples(n_samples, n_targets)
         X = []
+
+        # loop through targets
         for t in range(n_targets):
             sample_size = target_samples[t]
             r = radii[t]
+
+            # find the angle
             theta = np.random.uniform(0, 2 * np.pi, sample_size)
+
+            # find the coordinates from the angle and the radius - with noise applied to the radius, if any
             X0 = self._random_radius(r, sample_size, noise) * np.cos(theta)
             X1 = self._random_radius(r, sample_size, noise) * np.sin(theta)
             X.append(np.vstack((X0, X1)).T)
+
+        # reorganise output structure
         X = np.concatenate(X, axis=0)
-        data = X, y
-        return data
+        return X, y
 
     def make_cloud(self, centres=None, n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None):
         """
@@ -683,6 +692,6 @@ class DataContainer:
 
 if __name__ == "__main__":
     generator = DataGenerator()
-    doughnut = generator.make_donut(noise=1.0)
+    doughnut = generator.make_donut()
     container = DataContainer(doughnut)
     container.plot()
