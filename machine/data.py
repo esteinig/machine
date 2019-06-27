@@ -61,11 +61,10 @@ class DataGenerator:
 
         Returns
         -------
-        r : float
+            float
             normally distributed list with mean = radius, scale = noise_level, size = n_points
         """
-        r = np.random.normal(loc=radius, scale=noise, size=n_samples)
-        return r
+        return np.random.normal(loc=radius, scale=noise, size=n_samples)
 
     def _distribute_samples(self, n_samples, n_targets):
         """
@@ -92,7 +91,7 @@ class DataGenerator:
         y = np.array([i for lst in [[t] * target_samples[t] for t in range(n_targets)] for i in lst]).reshape((n_samples,))
         return target_samples, y
 
-    def make_donut(self, radii=None, n_samples=100, n_targets=2, noise: float = None, random_state=None):
+    def make_donut(self, radii=None, n_samples=100, n_targets=2, noise=0.0, random_state=None):
         """
         Generates concentric donut rings
 
@@ -107,7 +106,7 @@ class DataGenerator:
             The total number of points generated.
         n_targets : int, optional (default=2)
             The number of target classes (spiral arms)
-        noise : double or None (default=None)
+        noise : double (default=0.0)
             Standard deviation of Gaussian noise added to the data.
         random_state : int, RandomState instance or None (default)
             Determines random number generation for dataset shuffling and noise.
@@ -120,10 +119,6 @@ class DataGenerator:
         y : array of shape [n_samples]
             The integer labels (0, 1, ..., targets) for class membership of each sample.
         """
-
-        if not noise:
-            noise = 0.0
-
         if radii is None:
             radii = list(range(n_targets))
         else:
@@ -684,3 +679,10 @@ class DataContainer:
             if idx != last:
                 plt.gca().axes.get_xaxis().set_ticks([])
         plt.show()
+
+
+if __name__ == "__main__":
+    generator = DataGenerator()
+    doughnut = generator.make_donut(noise=1.0)
+    container = DataContainer(doughnut)
+    container.plot()
