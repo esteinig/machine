@@ -3,10 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 import itertools
-# import seaborn as sns
-import random
-
-# random.seed(1)
+import seaborn as sns
 
 
 class DataGenerator:
@@ -16,29 +13,20 @@ class DataGenerator:
     (see e.g. https://playground.tensorflow.org)
     ...
 
-    Attributes
-    ----------
-    n_samples : int, optional
-        number of random points generated for each class in n_targets (default is 100)
-    targets : int, optional
-        number of distinct target classes of categories (default is 2)
-    n_features : int, optional (default is 2)
-        dimension of dataset, i.e. the number of independent explanatory variables
-    noise : float, optional (default is 0.0)
-        level of absolute random noise added to each base (deterministic) dataset
-
     Methods
     -------
-    make_cloud(centres=None, n_samples=100, targets=2, noise=None, dim=2)
+    make_cloud(n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None, centres=None)
         Generates Gaussian clouds of dimension dim
-    make_donut(radii=None, n_samples=100, targets=2, noise=None)
+    make_donut(n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None, radii=None)
         Generatea a dataset of noisy concentric rings
-    make_xor(n_samples=100, noise=None, dim=2)
+    make_xor(n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None)
         Generates a [-1,1]^d hypercube of uniformly distributed points with target = sign(x1*x2*...*xn)
-    make_spiral(n_samples=100, targets=2, noise=None)
+    make_spiral(n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None)
         Generates a set of uniformly spaced spiral arms
-    make_moon(n_samples=100)
+    make_moons(n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None)
         Make two interleaving half circles
+    make_wheel(n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None)
+        Generates a uniform pin wheel
     """
 
     def __init__(self):
@@ -85,65 +73,21 @@ class DataGenerator:
         y : array of shape [n_samples]
             The integer labels (0, 1, ..., targets) for class membership of each sample.
         """
-        target_samples = [n_samples // n_targets] * n_targets
-        for rem in range(n_samples % n_targets):
-            target_samples[rem] += 1
-        target_samples = [int(i) for i in target_samples]
-        y = np.array([i for lst in [[t] * target_samples[t] for t in range(n_targets)] for i in lst]).reshape((n_samples,))
-        return target_samples, y
+        targets = list(range(n_targets))
+        repeats = n_samples // n_targets + 1
+        y = targets * repeats
+        y = np.sort(y[:n_samples])
+        y = np.asarray(y).reshape(n_samples, ).astype(int)
+        idxs = []
+        target_samples = []
+        for t in targets:
+            idxs += [list(np.where(y == t)[0])]
+            target_samples += [len(idxs[t])]
+        return y, target_samples, idxs
 
-    def make_donut(self, radii=None, n_samples=100, n_targets=2, noise: float = None, random_state=None):
+    def make_donut(self, n_samples=100, n_targets=2, noise: float = 0.1, n_features=2, random_state=None, radii=None):
         """
         Generates concentric donut rings
-
-        A simple toy dataset to visualize clustering and classification
-        algorithms.
-
-        Parameters
-        ----------
-        radii : float, optional (default=None)
-            The radii of the donut rings
-        n_samples : int, optional (default=100)
-            The total number of points generated.
-        n_targets : int, optional (default=2)
-            The number of target classes (spiral arms)
-        noise : double or None (default=None)
-            Standard deviation of Gaussian noise added to the data.
-        random_state : int, RandomState instance or None (default)
-            Determines random number generation for dataset shuffling and noise.
-            Pass an int for reproducible output across multiple function calls.
-
-        Returns
-        -------
-        X : array of shape [n_samples, n_features]
-            The generated samples.
-        y : array of shape [n_samples]
-            The integer labels (0, 1, ..., targets) for class membership of each sample.
-        """
-
-        if not noise:
-            noise = 0.0
-
-        if radii is None:
-            radii = list(range(n_targets))
-        else:
-            n_targets = len(radii)
-        target_samples, y = self._distribute_samples(n_samples, n_targets)
-        X = []
-        for t in range(n_targets):
-            sample_size = target_samples[t]
-            r = radii[t]
-            theta = np.random.uniform(0, 2 * np.pi, sample_size)
-            X0 = self._random_radius(r, sample_size, noise) * np.cos(theta)
-            X1 = self._random_radius(r, sample_size, noise) * np.sin(theta)
-            X.append(np.vstack((X0, X1)).T)
-        X = np.concatenate(X, axis=0)
-        data = X, y
-        return data
-
-    def make_cloud(self, centres=None, n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None):
-        """
-        Generates Gaussian clouds of dimension n_features
 
         A simple toy dataset to visualize clustering and classification
         algorithms.
@@ -157,10 +101,12 @@ class DataGenerator:
         noise : double or None (default=None)
             Standard deviation of Gaussian noise added to the data.
         n_features : int, optional (default=2)
-            Dimension of each cloud
+            Dimension of each donut. Current implementation requires n_features = 2.
         random_state : int, RandomState instance or None (default)
             Determines random number generation for dataset shuffling and noise.
             Pass an int for reproducible output across multiple function calls.
+        radii : float, optional (default=None)
+            The radii of the donut rings
 
         Returns
         -------
@@ -170,6 +116,61 @@ class DataGenerator:
             The integer labels (0, 1, ..., targets) for class membership of each sample.
         """
 
+        if random_state is not None:
+            np.random.seed(random_state)
+
+        if radii is None:
+            radii = list(range(1, n_targets + 1))
+        else:
+            n_targets = len(radii)
+
+        y, target_samples, idxs = self._distribute_samples(n_samples, n_targets)
+        X = np.empty(shape=(n_samples, 2))
+        targets = list(range(n_targets))
+        for t in targets:
+            sample_size = target_samples[t]
+            rows = idxs[t]
+            theta = np.random.uniform(0, 2 * np.pi, sample_size)
+            r = self._random_radius(radii[t], sample_size, noise)
+            X[rows, 0] = r * np.cos(theta)
+            X[rows, 1] = r * np.sin(theta)
+        data = X, y
+        return data
+
+    def make_cloud(self, n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None, centres=None):
+        """
+        Generates Gaussian clouds of dimension n_features
+
+        A simple toy dataset to visualize clustering and classification
+        algorithms.
+
+        Parameters
+        ----------
+        n_samples : int, optional (default=100)
+            The total number of points generated.
+        n_targets : int, optional (default=2)
+            The number of target classes (clouds)
+        noise : double or None (default=None)
+            Standard deviation of Gaussian noise added to the data.
+        n_features : int, optional (default=2)
+            Dimension of each cloud.
+        random_state : int, RandomState instance or None (default)
+            Determines random number generation for dataset shuffling and noise.
+            Pass an int for reproducible output across multiple function calls.
+        centres : array of shape [n_targets, n_features], optional (default=None)
+            Array of cloud centre points
+
+        Returns
+        -------
+        X : array of shape [n_samples, n_features]
+            The generated samples.
+        y : array of shape [n_samples]
+            The integer labels (0, 1, ..., targets) for class membership of each sample.
+        """
+
+        if random_state is not None:
+            np.random.seed(random_state)
+
         if centres is None:
             mean = [0] * n_features
             cov = 2*np.identity(n_features)
@@ -178,19 +179,20 @@ class DataGenerator:
             n_features = len(centres[0])
             n_targets = len(centres)
             centres = np.array(centres).reshape(n_targets, n_features)
+        cov = noise * np.identity(n_features)
 
-        target_samples, y = self._distribute_samples(n_samples, n_targets)
-        cov = noise*np.identity(n_features)
-        X = []
-        for t in range(n_targets):
+        y, target_samples, idxs = self._distribute_samples(n_samples, n_targets)
+        X = np.empty(shape=(n_samples, n_features))
+        targets = list(range(n_targets))
+        for t in targets:
             sample_size = target_samples[t]
-            X.append(np.random.multivariate_normal(centres[t, :], cov, sample_size))
-        X = np.concatenate(X, axis=0)
-
+            rows = idxs[t]
+            X[rows, :] = np.random.multivariate_normal(centres[t, :], cov, sample_size)
         data = X, y
         return data
 
-    def make_spiral(self, n_samples=100, n_targets=2, noise=0.05, random_state=None, inner_radius=0.0, outer_radius=2):
+    def make_spiral(self, n_samples=100, n_targets=2, noise=0.05, n_features=2,
+                    random_state=None, inner_radius=0.0, outer_radius=2):
         """Make a set of uniformly spaced spiral arms
 
         A simple toy dataset to visualize clustering and classification
@@ -204,9 +206,15 @@ class DataGenerator:
             The number of target classes (spiral arms)
         noise : double or None (default=None)
             Standard deviation of Gaussian noise added to the data.
+        n_features : int, optional (default=2)
+            Dimension of the spiral arms. Current implementation requires n_features = 2.
         random_state : int, RandomState instance or None (default)
             Determines random number generation for dataset shuffling and noise.
             Pass an int for reproducible output across multiple function calls.
+        inner_radius : float, optional (default=0.0)
+            Inner radius of the spiral arm
+        outer_radius : float, optional (default=2.0)
+            Outer radius of the spiral arm
 
         Returns
         -------
@@ -216,20 +224,24 @@ class DataGenerator:
             The integer labels (0, 1, ..., n_targets) for class membership of each sample.
         """
 
-        target_samples, y = self._distribute_samples(n_samples, n_targets)
+        if random_state is not None:
+            np.random.seed(random_state)
 
-        X = []
-        for t in range(n_targets):
+        y, target_samples, idxs = self._distribute_samples(n_samples, n_targets)
+        X = np.empty(shape=(n_samples, 2))
+        targets = list(range(n_targets))
+        for t in targets:
             sample_size = target_samples[t]
-            theta = np.sqrt(np.linspace(0, 16*np.pi**2, sample_size)) + 2 * t * np.pi / n_targets
+            rows = idxs[t]
+            theta = np.sqrt(np.linspace(0, 16 * np.pi ** 2, sample_size)) + 2 * t * np.pi / n_targets
             r = np.linspace(inner_radius, outer_radius, sample_size)
             random_r = self._random_radius(radius=r, n_samples=sample_size, noise=noise)
-            X.append(np.vstack([random_r * np.cos(theta), random_r*np.sin(theta)]).T)
-        X = np.concatenate(X, axis=0)
+            X[rows, 0] = random_r * np.cos(theta)
+            X[rows, 1] = random_r * np.sin(theta)
         data = X, y
         return data
 
-    def make_xor(self, n_samples=100, noise=None, n_features=2, n_targets=2, random_state=None):
+    def make_xor(self, n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None):
         """Make a hypercube of of uniformly distributed points where y = sign(x0*x1*...)
 
         A simple toy dataset to visualize clustering and classification
@@ -239,6 +251,9 @@ class DataGenerator:
         ----------
         n_samples : int, optional (default=100)
             The total number of points generated.
+        n_targets : int, optional (default=2)
+            The number of target classes. Current implementation
+            requires n_targets = 2.
         noise : double or None (default=None)
             Standard deviation of Gaussian noise added to the data.
         n_features : int, optional (default=2)
@@ -255,15 +270,16 @@ class DataGenerator:
             The integer labels (0 or 1) for class membership of each sample.
         """
 
-        X = np.random.uniform(low=-1, high=1, size=(n_samples, n_features))
-        y = (((np.sign(np.prod(X, axis=1)) + 1) / 2).astype(int)).reshape(n_samples,)
+        if random_state is not None:
+            np.random.seed(random_state)
 
-        if noise is not None:
-            X += np.random.normal(scale=noise, size=X.shape)
+        X = np.random.uniform(low=-1, high=1, size=(n_samples, n_features))
+        X += np.random.normal(scale=noise, size=X.shape)
+        y = (((np.sign(np.prod(X, axis=1)) + 1) / 2).astype(int)).reshape(n_samples,)
         data = X, y
         return data
 
-    def make_moons(self, n_samples=100, noise=None, n_targets=2):
+    def make_moons(self, n_samples=100, n_targets=2, noise=0.1, n_features=2, random_state=None):
         """Make two interleaving half circles
 
         A simple toy dataset to visualize clustering and classification
@@ -273,8 +289,13 @@ class DataGenerator:
         ----------
         n_samples : int, optional (default=100)
             The total number of points generated.
-        noise : double or None (default=None)
+        n_targets : int, optional (default=2)
+            The number of target classes (intervleaving moons). Current implementation
+            requires n_targets = 2.
+        noise : double (default=0.1)
             Standard deviation of Gaussian noise added to the data.
+        n_features : int, optional (default=2)
+            Dimension of the moons. Current implementation requires n_features = 2.
         random_state : int, RandomState instance or None (default)
             Determines random number generation for dataset shuffling and noise.
             Pass an int for reproducible output across multiple function calls.
@@ -287,9 +308,12 @@ class DataGenerator:
             The integer labels (0 or 1) for class membership of each sample.
         """
 
+        if random_state is not None:
+            np.random.seed(random_state)
+
         n_targets = 2
 
-        target_samples, y = self._distribute_samples(n_samples, n_targets)
+        y, target_samples, idxs = self._distribute_samples(n_samples, n_targets)
         outer_circ_x = np.cos(np.linspace(0, np.pi, target_samples[0]))
         outer_circ_y = np.sin(np.linspace(0, np.pi, target_samples[0]))
         inner_circ_x = 1 - np.cos(np.linspace(0, np.pi, target_samples[1]))
@@ -299,6 +323,52 @@ class DataGenerator:
                        np.append(outer_circ_y, inner_circ_y)]).T
         if noise is not None:
             X += np.random.normal(scale=noise, size=X.shape)
+        data = X, y
+        return data
+
+    def make_wheel(self, n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None):
+        """Make pin wheel
+
+        A simple toy dataset to visualize clustering and classification
+        algorithms.
+
+        Parameters
+        ----------
+        n_samples : int, optional (default=100)
+            The total number of points generated.
+        n_targets : int, optional (default=2)
+            The number of target classes (pieces of the wheel).
+        noise : double, optional (default=0.05)
+            Standard deviation of Gaussian noise added to the data.
+        n_features : int, optional (default=2)
+            Dimension of the wheel. Current implementation requires n_features = 2.
+        random_state : int, RandomState instance or None (default)
+            Determines random number generation for dataset shuffling and noise.
+            Pass an int for reproducible output across multiple function calls.
+
+        Returns
+        -------
+        X : array of shape [n_samples, 2]
+            The generated samples.
+        y : array of shape [n_samples]
+            The integer labels (0 or 1) for class membership of each sample.
+        """
+
+        if random_state is not None:
+            np.random.seed(random_state)
+
+        y, target_samples, idxs = self._distribute_samples(n_samples, n_targets)
+        X = np.empty(shape=(n_samples, 2))
+        targets = list(range(n_targets))
+        for t in targets:
+            sample_size = target_samples[t]
+            rows = idxs[t]
+            theta = np.random.uniform(low=2 * t * np.pi / n_targets, high=2 * (t+1) * np.pi / n_targets, size=(sample_size,))
+            r = np.random.uniform(low=0, high=1, size=(sample_size,))
+            X[rows, 0] = r * np.cos(theta)
+            X[rows, 1] = r * np.sin(theta)
+        if noise is not None:
+            X += np.random.normal(loc=0.0, scale=noise, size=X.shape)
         data = X, y
         return data
 
@@ -313,7 +383,7 @@ class DataContainer:
         ----------
         data_raw : array
             raw (e.g. unscaled, unshuffled) dataset given as a tuple (X,y) of np.arrays
-        data_df : dataframe
+        data : dataframe
             dataset saved as a a pandas dataframe
         n_samples : int
             number of samples/observations in the dataset
@@ -321,6 +391,8 @@ class DataContainer:
             dimension of dataset, i.e. the number of independent explanatory variables
         feature_names : char
             list of feature names, e.g. X0, X1, ...
+        target_name : char
+            name of target variable
         n_targets : int
             no. of distinct target labels (for categorical data)
 
@@ -343,21 +415,31 @@ class DataContainer:
         """
 
     def __init__(self, data, feature_names=None,
-                 target_names=None, shuffle_data=True):
-        self.data_raw = data
-        self.feature_names = feature_names
-        self.target_names = target_names
-        self.data_df = self._store_data_as_df(data, feature_names, target_names)
+                 target_name=None, shuffle_data=False):
+        if not isinstance(data, pd.DataFrame):
+            self.data_raw = data
+            self.data = self._store_data_as_df(data, feature_names, target_name)
+        else:
+            self.data = data
+            if feature_names is None:
+                self.feature_names = list(self.data)[:-1]
+            if target_name is None:
+                self.target_name = list(self.data)[-1]
         self.n_features = len(self.feature_names)
-        self.n_targets = len(self.target_names)
-        self.n_samples = self.data_df.shape[0]
+        # self.n_targets = len(self.target_name)
+        self.n_samples = self.data.shape[0]
+        self.targets = list(set(self.data[self.target_name]))
+        self.n_targets = len(self.targets)
+        self.target_dct = None
+        self.target_dct_inv = None
         if shuffle_data:
             self.shuffle()
+            self.shuffled = True
         else:
             self.shuffled = False
         self.scales = [np.ones(shape=(self. n_features, 1)), np.zeros(shape=(self.n_features, 1))]
 
-    def _store_data_as_df(self, data, feature_names, target_names):
+    def _store_data_as_df(self, data, feature_names, target_name):
         """
         Store data array as a dataframe
 
@@ -365,41 +447,95 @@ class DataContainer:
         ----------
         data : array, shape = (n_samples, n_features + 1)
             Original dataset stored as a numpy array
-        Returns
-        data : dataframe, shape = (n_samples, n_features + 1)
-            Original dataset stored as a pandas dataframe
         """
         X, y = data
         n_samples, n_features = X.shape
         if feature_names is None:
             feature_names = [''.join(['X', str(i)]) for i in range(n_features)]
-        if target_names is None:
+        if target_name is None:
             if y.ndim == 1:
-                target_names = ['y']
+                target_name = ['y']
             else:
-                target_names = [''.join(['y', str(i)]) for i in range(y.shape[1])]
-        n_targets = len(target_names)
-        colnames = feature_names + target_names
+                target_name = [''.join(['y', str(i)]) for i in range(y.shape[1])]
+        n_targets = len(target_name)
+        colnames = feature_names + target_name
         data = pd.DataFrame(np.concatenate((X, y.reshape(n_samples, n_targets)), axis=1), columns=colnames)
         self.feature_names = feature_names
-        self.target_names = target_names
+        self.target_name = target_name
         return data
 
-    def _extract_arrays(self, data_df=None):
-        if data_df is None:
-            data_df = self.data_df
-        y = np.array(data_df[self.target_names]).flatten()
-        X = np.array(data_df[self.feature_names])
+    def int_enc(self):
+        """
+        Encode target values as integers for classification
+
+        ...
+
+        Returns
+        -------
+        y : array
+            Integer encoded array of target values
+        """
+        new_targets = list(range(self.n_targets))
+        self.target_dct = dict(zip(self.targets, new_targets))
+        self.target_dct_inv = dict(zip(new_targets, self.targets))
+        y = np.empty(shape=(self.n_samples, ))
+        for i in range(self.n_samples):
+            y[i] = self.target_dct[self.data[self.target_name][i]]
+        return y
+
+    def _extract_arrays(self, data=None):
+        """
+        Extract the feature and target values from dataframe
+
+        ...
+
+        Parameters
+        ----------
+        data : array (default=None)
+            Dataset
+
+        Returns
+        -------
+        X : array
+            Array of feature values
+        y : array
+            Array of target values
+        """
+        if data is None:
+            data = self.data
+        X = np.array(data[self.feature_names])
+        y = np.array(data[self.target_name]).flatten()
         return X, y
 
     def shuffle(self):
         """Shuffle dataset stored in self.data_df
 
         """
-        self.data_df = self.data_df.sample(frac=1)
+        self.data = self.data.sample(frac=1)
         self.shuffled = True
 
-    def train_test_split(self, frac=0.8):
+    def str(self):
+        """
+        Display the structure of the dataset
+
+
+        """
+
+        (n_obs, n_vars) = self.data.shape
+        var_names = list(self.data)
+        data_types = self.data.dtypes
+        print('Data structure')
+        print(" ".join([str(n_obs), 'obs. of', str(n_vars), 'variables:']))
+        for i in range(n_vars):
+            var_name = var_names[i]
+            data_type = data_types[i]
+            if isinstance(self.data[var_name][0], float):
+                values = [str(np.round(val,3)) for val in self.data[var_name][:5]]
+            else:
+                values = [str(val) for val in self.data[var_name][:5]]
+            print(" ".join([var_name, ":", str(data_type)] + values))
+
+    def train_test_split(self, frac=0.8, inprop=True, random_state=None):
         """Split the dataset self.data_df into training and test sets
 
 
@@ -408,6 +544,9 @@ class DataContainer:
         frac : float, optional (default=0.8)
             Fraction of the dataset assigned to the training set (with the remaining
             (1 - frac) assigned to the test set
+        inprop : Boolean, optional (default=True)
+            If inprop is true, samples are drawn in proportion to their abundance in
+            the dataset
 
         Returns
         -------
@@ -421,11 +560,15 @@ class DataContainer:
             The test targets
         """
 
-        if not self.shuffled:
-            self.shuffle()
-        train = self.data_df.sample(frac=frac)
-        test = self.data_df.loc[~self.data_df.index.isin(train.index), :]
-
+        # if inprop:
+        #     train = self.data.groupby(self.target_name).apply(lambda x: x.sample(frac=frac))
+        # else:
+        #     train = self.data.sample(frac=frac)
+        # test = self.data.loc[~self.data.index.isin(train.index), :]
+        if random_state is not None:
+            np.random.seed(random_state)
+        train = self.data.sample(frac=frac)
+        test = self.data.loc[~self.data.index.isin(train.index), :]
         X_train, y_train = self._extract_arrays(train)
         X_test, y_test = self._extract_arrays(test)
 
@@ -436,21 +579,42 @@ class DataContainer:
         Plot the dataset
 
         """
-
-        X, y = self._extract_arrays()
-        if self.n_features == 2:
-            plt.scatter(X[:, 0], X[:, 1], c=y,
-                        edgecolors='w', linewidths=0.5)
-            plt.xlabel(self.feature_names[0])
-            plt.ylabel(self.feature_names[1])
-        elif self.n_features == 3:
+        # if self.n_features == 3:
+        #     self.data.plot.scatter(x=self.feature_names[0], y=self.feature_names[1],
+        #                            z=self.feature_names[2], c=self.target_name[0],
+        #                            colormap='viridis', edgecolors='w', linewidths=0.5)
+        # else:
+        #     self.data.plot.scatter(x=self.feature_names[0], y=self.feature_names[1],
+        #                            c=self.target_name[0], colormap='viridis',
+        #                            edgecolors='w', linewidths=0.5)
+        if self.n_features == 3:
             fig = plt.figure()
             ax = Axes3D(fig)
-            ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=y,
-                       edgecolors='w', linewidths=0.5)
+            scatter = ax.scatter(self.data[self.feature_names[0]],
+                                 self.data[self.feature_names[1]],
+                                 self.data[self.feature_names[2]],
+                                 c=self.data[self.target_name],
+                                 edgecolors='w', linewidths=0.5)
             ax.set_xlabel(self.feature_names[0])
             ax.set_ylabel(self.feature_names[1])
             ax.set_zlabel(self.feature_names[2])
+            # legend = ax.legend(*scatter.legend_elements(),
+            #                    loc="lower left",
+            #                    title=self.target_name[0])
+            # ax.add_artist(legend)
+        else:
+            sns.scatterplot(self.data[self.feature_names[0]],
+                            self.data[self.feature_names[1]],
+                            hue=self.data[self.target_name],
+                            edgecolors='w', linewidths=0.5)
+            # fig, ax = plt.subplots()
+            # scatter = ax.scatter(self.data[self.feature_names[0]],
+            #                      self.data[self.feature_names[1]],
+            #                      c=self.data[self.target_name],
+                                 # c=self.int_enc(),
+                                 # edgecolors='w', linewidths=0.5)
+            # ax.set_xlabel(self.feature_names[0])
+            # ax.set_ylabel(self.feature_names[1])
         plt.grid(linewidth=0.2)
         plt.show()
         return
@@ -480,7 +644,7 @@ class DataContainer:
         X_scaled = (X - Xbar)/Xsig
         if inplace:
             data = X_scaled, y
-            self.data_df = self._store_data_as_df(data, self.feature_names, self.target_names)
+            self.data_df = self._store_data_as_df(data, self.feature_names, self.target_name)
         return X_scaled
 
     def back_transform(self, X_scaled=None, scales=None, inplace=True):
@@ -502,7 +666,7 @@ class DataContainer:
         X = X_scaled*Xsig + Xbar
         if inplace:
             data = X, y
-            self.data_df = self._store_data_as_df(data, self.feature_names, self.target_names)
+            self.data_df = self._store_data_as_df(data, self.feature_names, self.target_name)
         return X
 
     def add_polynomial_features(self, degree=2, terms=None, powers_only=False,
@@ -531,9 +695,9 @@ class DataContainer:
             Extended array containing additional polynomial and interaction features
         """
         if terms is None:
-            X_subset = self.data_df[self.feature_names]
+            X_subset = self.data[self.feature_names]
         else:
-            X_subset = self.data_df[terms]
+            X_subset = self.data[terms]
         colnames = list(X_subset)
         X_new = pd.DataFrame()
         new_feature_names = []
@@ -558,10 +722,27 @@ class DataContainer:
             X_new = np.asarray(X_new[new_feature_names])
             X, y = self._extract_arrays()
             data = np.concatenate((X, X_new), axis=1), y
-            self.data_df = self._store_data_as_df(data, feature_names, self.target_names)
+            self.data = self._store_data_as_df(data, feature_names, self.target_name)
         return X_new
 
     def add_features(self, X_new, feature_names=None):
+        """
+        Add new, user-defined features to the existing dataset
+
+        ...
+
+        Parameters
+        ----------
+        X_new : array (nrows = X.shape[0])
+            New feature values for each existing sample
+        feature_names : string (default = None)
+            Names of new features
+
+        Returns
+        -------
+        self
+            Augmented dataset with new feature values included
+        """
         n_new_features = X_new.shape[1]
         X, y = self._extract_arrays()
         if feature_names is None:
@@ -569,7 +750,7 @@ class DataContainer:
         else:
             feature_names = self.feature_names + feature_names
         data = np.concatenate((X, X_new), axis=1), y
-        self.data_df = self._store_data_as_df(data, feature_names, self.target_names)
+        self.data = self._store_data_as_df(data, feature_names, self.target_name)
         return
 
     def one_hot_enc(self, y=None):
@@ -607,7 +788,7 @@ class DataContainer:
         X : array of shape [n_samples, n_features + 1]
             The generated samples plus a new column of white noise.
         """
-        if self.data_df is None:
+        if self.data is None:
             raise NotImplementedError('Dataset not found (i.e. not yet generated)')
         n_samples = self.n_samples
         X, y = self._extract_arrays()
@@ -615,10 +796,30 @@ class DataContainer:
         X = np.hstack((X, white_noise))
         feature_names = self.feature_names + ['Noise']
         data = X, y
-        self.data_df = self._store_data_as_df(data, feature_names, self.target_names)
+        self.data = self._store_data_as_df(data, feature_names, self.target_name)
         return
 
     def pca(self, X=None, plot=False):
+        """
+        Perform a principle components analysis of the stored dataset
+
+        ...
+
+        Parameters
+        ----------
+        X : array (default = None)
+            Dataset on which PCA analysis is performed. If none is provided,
+            PCA is performed on self.data
+        plot : Boolean (default = False)
+            Plot ranked principle components
+
+        Returns
+        -------
+        Z : array
+            Array of principle component vectors (stored as columns)
+        lambda : list
+            List of eigenvalues
+        """
         if X is None:
             X, _ = self._extract_arrays()
         covX = np.cov(X.T)
@@ -634,53 +835,44 @@ class DataContainer:
             plt.show()
         return Z, lambdas
 
-    def pairplot(self, data=None):
+    def pairplot(self, data=None, vars=None, cont=False):
+        """
+        A matrix of scatter plots displaying the correlations between covariates in data
+
+        ...
+
+        Parameters
+        ----------
+        data : array (default = None)
+            Input dataset. If data is None, self.data is taken as default
+        vars : string (default = None)
+            Subset of features in data to plot
+        cont : Boolean (default = False)
+            Plot contour plots above diagonal
+        """
+        sns.set(style='whitegrid')
         if data is None:
-            data = self.data_df
-        n_vars = len(data.columns)
-        var_names = list(data.columns)
-        last = n_vars - 1
-        target_name = var_names[-1]
-        n_targets = len(np.unique(data[target_name]))
-        for row in range(n_vars):
-            for col in range(row):
-                plt.subplot(n_vars, n_vars, row*n_vars + (col + 1))
-                plt.scatter(data[var_names[col]], data[var_names[row]], c=data[target_name],
-                            edgecolors='w', linewidths=0.5)
-                plt.gca().axes.grid(linewidth=0.2)
-                if col == 0:
-                    plt.ylabel(var_names[row])
-                if row == last:
-                    plt.xlabel(var_names[col])
-                if row != last:
-                    plt.gca().xaxis.set_major_formatter(plt.NullFormatter())
-                    # plt.gca().axes.get_xaxis().set_ticks([])
-                if col != 0:
-                    plt.gca().yaxis.set_major_formatter(plt.NullFormatter())
-                    # plt.gca().axes.get_yaxis().set_ticks([])
-        covX = np.cov(data.T)
-        # print('covX:\n', covX)
-        for row in range(n_vars):
-            for col in range(row+1, n_vars):
-                plt.subplot(n_vars, n_vars, row*n_vars + (col + 1))
-                plt.text(0.5, 0.5, s=str(np.round(covX[row, col], 4)), fontsize=1.5*np.log(np.abs(covX[row, col])) + 10,
-                         horizontalalignment='center', verticalalignment='center')
-                plt.gca().axes.get_xaxis().set_ticks([])
-                plt.gca().axes.get_yaxis().set_ticks([])
-        for idx in range(n_vars):
-            plt.subplot(n_vars, n_vars, idx*(n_vars + 1) + 1)
-            if idx == last:
-                plt.hist(data[var_names[idx]])
-            else:
-                for target in range(n_targets):
-                    data[data[target_name] == target][var_names[idx]].plot.kde(c=target)
-                    plt.gca().fill()
-            if idx == 0:
-                plt.ylabel(var_names[idx])
-            if idx == last:
-                plt.xlabel(var_names[idx])
-            if idx != 0:
-                plt.gca().axes.get_yaxis().set_ticks([])
-            if idx != last:
-                plt.gca().axes.get_xaxis().set_ticks([])
+            data = self.data
+        if vars is None:
+            vars = self.feature_names
+        if cont:
+            g = sns.PairGrid(data, vars=vars, hue=self.target_name[0])
+            g = g.map_lower(plt.scatter, edgecolors='w', linewidths=0.5)
+            g = g.map_diag(sns.kdeplot, shade=True)
+            g = g.map_upper(sns.kdeplot)
+            g = g.add_legend()
+        else:
+            sns.pairplot(data=data, vars=vars, hue=self.target_name[0])
+        plt.show()
+
+    def boxplot(self, data=None):
+        """
+        Draw a boxplot of data grouped by target value
+
+        ...
+
+        """
+        if data is None:
+            data = self.data
+        data.boxplot(by=self.target_name)
         plt.show()
