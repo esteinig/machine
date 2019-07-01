@@ -416,6 +416,7 @@ class DataContainer:
 
     def __init__(self, data, feature_names=None,
                  target_name=None, shuffle_data=False):
+        print('Data is pd: ', isinstance(data, pd.DataFrame))
         if not isinstance(data, pd.DataFrame):
             self.data_raw = data
             self.data = self._store_data_as_df(data, feature_names, target_name)
@@ -579,34 +580,34 @@ class DataContainer:
         Plot the dataset
 
         """
-        # if self.n_features == 3:
-        #     self.data.plot.scatter(x=self.feature_names[0], y=self.feature_names[1],
-        #                            z=self.feature_names[2], c=self.target_name[0],
-        #                            colormap='viridis', edgecolors='w', linewidths=0.5)
-        # else:
-        #     self.data.plot.scatter(x=self.feature_names[0], y=self.feature_names[1],
-        #                            c=self.target_name[0], colormap='viridis',
-        #                            edgecolors='w', linewidths=0.5)
         if self.n_features == 3:
-            fig = plt.figure()
-            ax = Axes3D(fig)
-            scatter = ax.scatter(self.data[self.feature_names[0]],
-                                 self.data[self.feature_names[1]],
-                                 self.data[self.feature_names[2]],
-                                 c=self.data[self.target_name],
-                                 edgecolors='w', linewidths=0.5)
-            ax.set_xlabel(self.feature_names[0])
-            ax.set_ylabel(self.feature_names[1])
-            ax.set_zlabel(self.feature_names[2])
+            self.data.plot.scatter(x=self.feature_names[0], y=self.feature_names[1],
+                                   z=self.feature_names[2], c=self.target_name[0],
+                                   colormap='viridis', edgecolors='w', linewidths=0.5)
+        else:
+            self.data.plot.scatter(x=self.feature_names[0], y=self.feature_names[1],
+                                   c=self.target_name[0], colormap='viridis',
+                                   edgecolors='w', linewidths=0.5)
+        # if self.n_features == 3:
+        #     fig = plt.figure()
+        #     ax = Axes3D(fig)
+        #     scatter = ax.scatter(self.data[self.feature_names[0]],
+        #                          self.data[self.feature_names[1]],
+        #                          self.data[self.feature_names[2]],
+        #                          c=self.data[self.target_name],
+        #                          edgecolors='w', linewidths=0.5)
+        #     ax.set_xlabel(self.feature_names[0])
+        #     ax.set_ylabel(self.feature_names[1])
+        #     ax.set_zlabel(self.feature_names[2])
             # legend = ax.legend(*scatter.legend_elements(),
             #                    loc="lower left",
             #                    title=self.target_name[0])
             # ax.add_artist(legend)
-        else:
-            sns.scatterplot(self.data[self.feature_names[0]],
-                            self.data[self.feature_names[1]],
-                            hue=self.data[self.target_name],
-                            edgecolors='w', linewidths=0.5)
+        # else:
+        #     sns.scatterplot(self.data[self.feature_names[0]],
+        #                     self.data[self.feature_names[1]],
+        #                     hue=self.data[self.target_name],
+        #                     edgecolors='w', linewidths=0.5)
             # fig, ax = plt.subplots()
             # scatter = ax.scatter(self.data[self.feature_names[0]],
             #                      self.data[self.feature_names[1]],
