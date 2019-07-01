@@ -1,2 +1,4 @@
 sandbox.py
 *.pyc
+*.iml
+*.xml
