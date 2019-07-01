@@ -877,3 +877,12 @@ class DataContainer:
             data = self.data
         data.boxplot(by=self.target_name)
         plt.show()
+
+
+if __name__ == "__main__":
+    generator = DataGenerator()
+    doughnut_data = generator.make_donut()
+    print(doughnut_data)
+    container = DataContainer(doughnut_data)
+    container.plot()
+
