@@ -68,22 +68,26 @@ class DataGenerator:
 
         Returns
         -------
-        target_samples : lst
-            List of sample distributions
         y : array of shape [n_samples]
             The integer labels (0, 1, ..., targets) for class membership of each sample.
+        target_samples : lst
+            List of sample distributions
+        indices:
+            Locations of the values referring to each sample in the y array
         """
+
+        # find the main y vector for the distribution of the data across targets
         targets = list(range(n_targets))
         repeats = n_samples // n_targets + 1
         y = targets * repeats
         y = np.sort(y[:n_samples])
         y = np.asarray(y).reshape(n_samples, ).astype(int)
-        idxs = []
-        target_samples = []
-        for t in targets:
-            idxs += [list(np.where(y == t)[0])]
-            target_samples += [len(idxs[t])]
-        return y, target_samples, idxs
+
+        # find additional summary quantities to use later
+        indices = [list(np.where(y == t)[0]) for t in targets]
+        target_samples = [len(indices[t]) for t in targets]
+
+        return y, target_samples, indices
 
     def make_donut(self, n_samples=100, n_targets=2, noise: float = 0.1, radii=None):
         """
@@ -418,7 +422,7 @@ class DataContainer:
 
     def __init__(self, data, feature_names=None,
                  target_name=None, shuffle_data=False):
-        print('Data is pd: ', isinstance(data, pd.DataFrame))
+        print('Data is pd: %s' % isinstance(data, pd.DataFrame))
         if not isinstance(data, pd.DataFrame):
             self.data_raw = data
             self.data = self._store_data_as_df(data, feature_names, target_name)
