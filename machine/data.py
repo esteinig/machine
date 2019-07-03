@@ -49,11 +49,10 @@ class DataGenerator:
 
         Returns
         -------
-        r : float
+        float
             normally distributed list with mean = radius, scale = noise_level, size = n_points
         """
-        r = np.random.normal(loc=radius, scale=noise, size=n_samples)
-        return r
+        return np.random.normal(loc=radius, scale=noise, size=n_samples)
 
     def _distribute_samples(self, n_samples, n_targets):
         """
@@ -80,14 +79,15 @@ class DataGenerator:
         targets = list(range(n_targets))
         repeats = n_samples // n_targets + 1
         y = targets * repeats
-        y = np.sort(y[:n_samples])
+        y = np.sort(y[: n_samples])
         y = np.asarray(y).reshape(n_samples, ).astype(int)
 
         # find additional summary quantities to use later
         indices = [list(np.where(y == t)[0]) for t in targets]
         target_samples = [len(indices[t]) for t in targets]
+        targets = list(range(n_targets))
 
-        return y, target_samples, indices
+        return y, target_samples, indices, targets
 
     def make_donut(self, n_samples=100, n_targets=2, noise: float = 0.1, radii=None):
         """
@@ -114,7 +114,7 @@ class DataGenerator:
             The integer labels (0, 1, ..., targets) for class membership of each sample.
         """
 
-        # default option to just use sequential integer values for the radii of the doughnuts
+        # default option to just use sequential integer values from one for the radii of the doughnuts
         if not radii:
             radii = list(range(1, n_targets + 1))
 
@@ -123,9 +123,8 @@ class DataGenerator:
             raise ValueError("provided radii not equal to number of targets requested")
 
         # work out how many samples in each group are needed, set the y-values, initialise empty array for x-values
-        y, target_samples, indexes = self._distribute_samples(n_samples, n_targets)
+        y, target_samples, indexes, targets = self._distribute_samples(n_samples, n_targets)
         X = np.empty(shape=(n_samples, 2))
-        targets = list(range(n_targets))
 
         # loop through targets
         for t in targets:
@@ -147,8 +146,7 @@ class DataGenerator:
         """
         Generates Gaussian clouds of dimension n_features
 
-        A simple toy dataset to visualize clustering and classification
-        algorithms.
+        A simple toy data set to visualize clustering and classification algorithms.
 
         Parameters
         ----------
@@ -168,34 +166,38 @@ class DataGenerator:
 
         Returns
         -------
-        X : array of shape [n_samples, n_features]
+        sample_coordinates : array of shape [n_samples, n_features]
             The generated samples.
-        y : array of shape [n_samples]
+        sample_target_values : array of shape [n_samples]
             The integer labels (0, 1, ..., targets) for class membership of each sample.
         """
 
-        if random_state is not None:
+        # for reproducibility, as described above
+        if random_state:
             np.random.seed(random_state)
 
-        if centres is None:
-            mean = [0] * n_features
-            cov = 2*np.identity(n_features)
-            centres = np.random.multivariate_normal(mean, cov, n_targets)
-        else:
-            n_features = len(centres[0])
-            n_targets = len(centres)
+        # if centres provided as an array, then the features/dimensions is the width and the targets is the columns
+        if centres:
+            n_features, n_targets = len(centres[0]), len(centres)
             centres = np.array(centres).reshape(n_targets, n_features)
-        cov = noise * np.identity(n_features)
 
-        y, target_samples, idxs = self._distribute_samples(n_samples, n_targets)
-        X = np.empty(shape=(n_samples, n_features))
-        targets = list(range(n_targets))
+        # find centres of the requested clouds using a multivariate normal distribution if not provided
+        else:
+            centre_covariance = 2.0 * np.identity(n_features)
+            centres = np.random.multivariate_normal([0.0] * n_features, centre_covariance, n_targets)
+
+        # no correlation between sample positions across each feature/dimension
+        sample_covariance = noise * np.identity(n_features)
+
+        # standard initialisation
+        sample_target_values, target_samples, indices, targets = self._distribute_samples(n_samples, n_targets)
+        sample_coordinates = np.empty(shape=(n_samples, n_features))
+
+        # generate cloud of samples for each target
         for t in targets:
-            sample_size = target_samples[t]
-            rows = idxs[t]
-            X[rows, :] = np.random.multivariate_normal(centres[t, :], cov, sample_size)
-        data = X, y
-        return data
+            sample_size, rows = target_samples[t], indices[t]
+            sample_coordinates[rows, :] = np.random.multivariate_normal(centres[t, :], sample_covariance, sample_size)
+        return sample_coordinates, sample_target_values
 
     def make_spiral(self, n_samples=100, n_targets=2, noise=0.05, n_features=2,
                     random_state=None, inner_radius=0.0, outer_radius=2):
@@ -233,9 +235,8 @@ class DataGenerator:
         if random_state is not None:
             np.random.seed(random_state)
 
-        y, target_samples, idxs = self._distribute_samples(n_samples, n_targets)
+        y, target_samples, idxs, targets = self._distribute_samples(n_samples, n_targets)
         X = np.empty(shape=(n_samples, 2))
-        targets = list(range(n_targets))
         for t in targets:
             sample_size = target_samples[t]
             rows = idxs[t]
@@ -319,7 +320,7 @@ class DataGenerator:
 
         n_targets = 2
 
-        y, target_samples, idxs = self._distribute_samples(n_samples, n_targets)
+        y, target_samples, idxs, _ = self._distribute_samples(n_samples, n_targets)
         outer_circ_x = np.cos(np.linspace(0, np.pi, target_samples[0]))
         outer_circ_y = np.sin(np.linspace(0, np.pi, target_samples[0]))
         inner_circ_x = 1 - np.cos(np.linspace(0, np.pi, target_samples[1]))
@@ -363,9 +364,8 @@ class DataGenerator:
         if random_state is not None:
             np.random.seed(random_state)
 
-        y, target_samples, idxs = self._distribute_samples(n_samples, n_targets)
+        y, target_samples, idxs, targets = self._distribute_samples(n_samples, n_targets)
         X = np.empty(shape=(n_samples, 2))
-        targets = list(range(n_targets))
         for t in targets:
             sample_size = target_samples[t]
             rows = idxs[t]
@@ -422,7 +422,7 @@ class DataContainer:
 
     def __init__(self, data, feature_names=None,
                  target_name=None, shuffle_data=False):
-        print('Data is pd: %s' % isinstance(data, pd.DataFrame))
+        # print('Data is pd: %s' % isinstance(data, pd.DataFrame))
         if not isinstance(data, pd.DataFrame):
             self.data_raw = data
             self.data = self._store_data_as_df(data, feature_names, target_name)
@@ -887,7 +887,7 @@ class DataContainer:
 
 if __name__ == "__main__":
     generator = DataGenerator()
-    doughnut_data = generator.make_donut()
+    doughnut_data = generator.make_cloud()
     container = DataContainer(doughnut_data)
-    # container.plot()
+    container.plot()
 
