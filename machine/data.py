@@ -334,11 +334,10 @@ class DataGenerator:
             sample_coordinates += np.random.normal(scale=noise, size=sample_coordinates.shape)
         return sample_coordinates, sample_target_values
 
-    def make_wheel(self, n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None):
+    def make_wheel(self, n_samples=100, n_targets=2, noise=0.05, random_state=None):
         """Make pin wheel
 
-        A simple toy dataset to visualize clustering and classification
-        algorithms.
+        A simple toy dataset to visualize clustering and classification algorithms.
 
         Parameters
         ----------
@@ -348,36 +347,39 @@ class DataGenerator:
             The number of target classes (pieces of the wheel).
         noise : double, optional (default=0.05)
             Standard deviation of Gaussian noise added to the data.
-        n_features : int, optional (default=2)
-            Dimension of the wheel. Current implementation requires n_features = 2.
         random_state : int, RandomState instance or None (default)
             Determines random number generation for dataset shuffling and noise.
             Pass an int for reproducible output across multiple function calls.
 
         Returns
         -------
-        X : array of shape [n_samples, 2]
+        sample_coordinates : array of shape [n_samples, 2]
             The generated samples.
-        y : array of shape [n_samples]
+        sample_target_values: array of shape [n_samples]
             The integer labels (0 or 1) for class membership of each sample.
         """
 
-        if random_state is not None:
+        # for reproducibility, as described above
+        if random_state:
             np.random.seed(random_state)
 
-        y, target_samples, idxs, targets = self._distribute_samples(n_samples, n_targets)
-        X = np.empty(shape=(n_samples, 2))
-        for t in targets:
-            sample_size = target_samples[t]
-            rows = idxs[t]
-            theta = np.random.uniform(low=2 * t * np.pi / n_targets, high=2 * (t+1) * np.pi / n_targets, size=(sample_size,))
-            r = np.random.uniform(low=0, high=1, size=(sample_size,))
-            X[rows, 0] = r * np.cos(theta)
-            X[rows, 1] = r * np.sin(theta)
-        if noise is not None:
-            X += np.random.normal(loc=0.0, scale=noise, size=X.shape)
-        data = X, y
-        return data
+        # standard initialisation
+        sample_target_values, target_samples, indices, targets = self._distribute_samples(n_samples, n_targets)
+
+        # generate data, must be with two features for this method
+        sample_coordinates = np.empty(shape=(n_samples, 2))
+        for n_target in targets:
+            sample_size, rows = target_samples[n_target], indices[n_target]
+            theta = np.random.uniform(low=2 * n_target * np.pi / n_targets, high=2 * (n_target + 1) * np.pi / n_targets,
+                                      size=(sample_size,))
+            central_radius = np.random.uniform(low=0, high=1, size=(sample_size,))
+            sample_coordinates[rows, :] = np.vstack((central_radius * np.cos(theta),
+                                                     central_radius * np.sin(theta))).T
+
+        # add noise if requested and return
+        if noise:
+            sample_coordinates += np.random.normal(loc=0.0, scale=noise, size=sample_coordinates.shape)
+        return sample_coordinates, sample_target_values
 
 
 class DataContainer:
@@ -888,7 +890,7 @@ class DataContainer:
 
 if __name__ == "__main__":
     generator = DataGenerator()
-    doughnut_data = generator.make_moons()
+    doughnut_data = generator.make_wheel(noise=None, n_targets=3)
     container = DataContainer(doughnut_data)
     container.plot()
 
