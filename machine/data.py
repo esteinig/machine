@@ -194,17 +194,15 @@ class DataGenerator:
         sample_coordinates = np.empty(shape=(n_samples, n_features))
 
         # generate cloud of samples for each target
-        for t in targets:
-            sample_size, rows = target_samples[t], indices[t]
-            sample_coordinates[rows, :] = np.random.multivariate_normal(centres[t, :], sample_covariance, sample_size)
+        for n_target in targets:
+            sample_size, rows = target_samples[n_target], indices[n_target]
+            sample_coordinates[rows, :] = np.random.multivariate_normal(centres[n_target, :], sample_covariance, sample_size)
         return sample_coordinates, sample_target_values
 
-    def make_spiral(self, n_samples=100, n_targets=2, noise=0.05, n_features=2,
-                    random_state=None, inner_radius=0.0, outer_radius=2):
+    def make_spiral(self, n_samples=100, n_targets=2, noise=0.05, random_state=None, inner_radius=0.0, outer_radius=2):
         """Make a set of uniformly spaced spiral arms
 
-        A simple toy dataset to visualize clustering and classification
-        algorithms.
+        A simple toy dataset to visualize clustering and classification algorithms.
 
         Parameters
         ----------
@@ -214,8 +212,6 @@ class DataGenerator:
             The number of target classes (spiral arms)
         noise : double or None (default=None)
             Standard deviation of Gaussian noise added to the data.
-        n_features : int, optional (default=2)
-            Dimension of the spiral arms. Current implementation requires n_features = 2.
         random_state : int, RandomState instance or None (default)
             Determines random number generation for dataset shuffling and noise.
             Pass an int for reproducible output across multiple function calls.
@@ -226,27 +222,28 @@ class DataGenerator:
 
         Returns
         -------
-        X : array of shape [n_samples, n_features]
+        sample_coordinates : array of shape [n_samples, n_features]
             The generated samples.
-        y : array of shape [n_samples]
+        sample_target_values : array of shape [n_samples]
             The integer labels (0, 1, ..., n_targets) for class membership of each sample.
         """
 
-        if random_state is not None:
+        # for reproducibility, as described above
+        if random_state:
             np.random.seed(random_state)
 
-        y, target_samples, idxs, targets = self._distribute_samples(n_samples, n_targets)
-        X = np.empty(shape=(n_samples, 2))
-        for t in targets:
-            sample_size = target_samples[t]
-            rows = idxs[t]
-            theta = np.sqrt(np.linspace(0, 16 * np.pi ** 2, sample_size)) + 2 * t * np.pi / n_targets
-            r = np.linspace(inner_radius, outer_radius, sample_size)
-            random_r = self._random_radius(radius=r, n_samples=sample_size, noise=noise)
-            X[rows, 0] = random_r * np.cos(theta)
-            X[rows, 1] = random_r * np.sin(theta)
-        data = X, y
-        return data
+        # standard initialisation
+        sample_target_values, target_samples, indices, targets = self._distribute_samples(n_samples, n_targets)
+        sample_coordinates = np.empty(shape=(n_samples, 2))
+
+        # generate spiral of samples for each target
+        for n_target in targets:
+            sample_size, rows = target_samples[n_target], indices[n_target]
+            theta = np.sqrt(np.linspace(0, 16 * np.pi ** 2, sample_size)) + 2 * np.pi * n_target / n_targets
+            random_radius = self._random_radius(radius=np.linspace(inner_radius, outer_radius, sample_size),
+                                                n_samples=sample_size, noise=noise)
+            sample_coordinates[rows, :] = np.vstack((random_radius * np.cos(theta), random_radius * np.sin(theta))).T
+        return sample_coordinates, sample_target_values
 
     def make_xor(self, n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None):
         """Make a hypercube of of uniformly distributed points where y = sign(x0*x1*...)
@@ -887,7 +884,7 @@ class DataContainer:
 
 if __name__ == "__main__":
     generator = DataGenerator()
-    doughnut_data = generator.make_cloud()
+    doughnut_data = generator.make_spiral()
     container = DataContainer(doughnut_data)
     container.plot()
 
