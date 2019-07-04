@@ -123,8 +123,8 @@ class DataGenerator:
             raise ValueError("provided radii not equal to number of targets requested")
 
         # work out how many samples in each group are needed, set the y-values, initialise empty array for x-values
-        y, target_samples, indexes, targets = self._distribute_samples(n_samples, n_targets)
-        X = np.empty(shape=(n_samples, 2))
+        sample_coordinates, target_samples, indexes, targets = self._distribute_samples(n_samples, n_targets)
+        sample_coordinates = np.empty(shape=(n_samples, 2))
 
         # loop through targets
         for t in targets:
@@ -136,11 +136,11 @@ class DataGenerator:
             r = self._random_radius(radii[t], sample_size, noise)
 
             # find the coordinates from the angle and the radius - with noise applied to the radius, if any
-            X[rows, 0] = r * np.cos(theta)
-            X[rows, 1] = r * np.sin(theta)
+            sample_coordinates[rows, :] = np.vstack((r * np.cos(theta),
+                                                     r * np.sin(theta))).T
 
         # return finished data
-        return X, y
+        return sample_coordinates, sample_coordinates
 
     def make_cloud(self, n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None, centres=None):
         """
@@ -281,7 +281,7 @@ class DataGenerator:
         sample_target_values = ((np.sign(np.prod(sample_coordinates, axis=1)) + 1) / 2).astype(int)
         return sample_coordinates, sample_target_values
 
-    def make_moons(self, n_samples=100, n_targets=2, noise=0.1, n_features=2, random_state=None):
+    def make_moons(self, n_samples=100, noise=0.1, random_state=None):
         """Make two interleaving half circles
 
         A simple toy dataset to visualize clustering and classification
@@ -304,29 +304,35 @@ class DataGenerator:
 
         Returns
         -------
-        X : array of shape [n_samples, 2]
+        sample_coordinates : array of shape [n_samples, 2]
             The generated samples.
-        y : array of shape [n_samples]
+        sample_target_values : array of shape [n_samples]
             The integer labels (0 or 1) for class membership of each sample.
         """
 
-        if random_state is not None:
+        # for reproducibility, as described above
+        if random_state:
             np.random.seed(random_state)
 
+        # must have two targets and two features for this method
         n_targets = 2
 
-        y, target_samples, idxs, _ = self._distribute_samples(n_samples, n_targets)
+        # standard initialisation
+        sample_target_values, target_samples, indices, _ = self._distribute_samples(n_samples, n_targets)
+
+        # central positions for upper half-moon
         outer_circ_x = np.cos(np.linspace(0, np.pi, target_samples[0]))
         outer_circ_y = np.sin(np.linspace(0, np.pi, target_samples[0]))
+
+        # central positions for lower half-moon
         inner_circ_x = 1 - np.cos(np.linspace(0, np.pi, target_samples[1]))
         inner_circ_y = 1 - np.sin(np.linspace(0, np.pi, target_samples[1])) - .5
 
-        X = np.vstack([np.append(outer_circ_x, inner_circ_x),
-                       np.append(outer_circ_y, inner_circ_y)]).T
-        if noise is not None:
-            X += np.random.normal(scale=noise, size=X.shape)
-        data = X, y
-        return data
+        # bring together and add noise
+        sample_coordinates = np.vstack([np.append(outer_circ_x, inner_circ_x), np.append(outer_circ_y, inner_circ_y)]).T
+        if noise:
+            sample_coordinates += np.random.normal(scale=noise, size=sample_coordinates.shape)
+        return sample_coordinates, sample_target_values
 
     def make_wheel(self, n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None):
         """Make pin wheel
@@ -882,7 +888,7 @@ class DataContainer:
 
 if __name__ == "__main__":
     generator = DataGenerator()
-    doughnut_data = generator.make_xor()
+    doughnut_data = generator.make_moons()
     container = DataContainer(doughnut_data)
     container.plot()
 
