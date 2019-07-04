@@ -245,7 +245,7 @@ class DataGenerator:
             sample_coordinates[rows, :] = np.vstack((random_radius * np.cos(theta), random_radius * np.sin(theta))).T
         return sample_coordinates, sample_target_values
 
-    def make_xor(self, n_samples=100, n_targets=2, noise=0.05, n_features=2, random_state=None):
+    def make_xor(self, n_samples=100, noise=0.05, n_features=2, random_state=None):
         """Make a hypercube of of uniformly distributed points where y = sign(x0*x1*...)
 
         A simple toy dataset to visualize clustering and classification
@@ -255,9 +255,6 @@ class DataGenerator:
         ----------
         n_samples : int, optional (default=100)
             The total number of points generated.
-        n_targets : int, optional (default=2)
-            The number of target classes. Current implementation
-            requires n_targets = 2.
         noise : double or None (default=None)
             Standard deviation of Gaussian noise added to the data.
         n_features : int, optional (default=2)
@@ -268,20 +265,21 @@ class DataGenerator:
 
         Returns
         -------
-        X : array of shape [n_samples, n_features]
+        sample_coordinates : array of shape [n_samples, n_features]
             The generated samples.
-        y : array of shape [n_samples]
+        sample_target_values : array of shape [n_samples]
             The integer labels (0 or 1) for class membership of each sample.
         """
 
-        if random_state is not None:
+        # for reproducibility, as described above
+        if random_state:
             np.random.seed(random_state)
 
-        X = np.random.uniform(low=-1, high=1, size=(n_samples, n_features))
-        X += np.random.normal(scale=noise, size=X.shape)
-        y = (((np.sign(np.prod(X, axis=1)) + 1) / 2).astype(int)).reshape(n_samples,)
-        data = X, y
-        return data
+        # generate xor data for samples
+        sample_coordinates = np.random.uniform(low=-1, high=1, size=(n_samples, n_features))
+        sample_coordinates += np.random.normal(scale=noise, size=sample_coordinates.shape)
+        sample_target_values = ((np.sign(np.prod(sample_coordinates, axis=1)) + 1) / 2).astype(int)
+        return sample_coordinates, sample_target_values
 
     def make_moons(self, n_samples=100, n_targets=2, noise=0.1, n_features=2, random_state=None):
         """Make two interleaving half circles
@@ -884,7 +882,7 @@ class DataContainer:
 
 if __name__ == "__main__":
     generator = DataGenerator()
-    doughnut_data = generator.make_spiral()
+    doughnut_data = generator.make_xor()
     container = DataContainer(doughnut_data)
     container.plot()
 
